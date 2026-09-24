@@ -29,17 +29,26 @@ ingredients_list = st.multiselect(
 )
 
 if ingredients_list:
-    ingredients_string = ""
+    ingredients_string = ''
 
     for fruit_chosen in ingredients_list:
-        ingredients_string += fruit_chosen + " "
+        ingredients_string += fruit_chosen + ' '
 
-    # Insert both ingredients and name
-    my_insert_stmt = """
-        INSERT INTO smoothies.public.orders
-        (ingredients, name_on_order)
-        VALUES ('""" + ingredients_string + """', '""" + name_on_order + """')
-    """
+        smoothiefroot_response = requests.get(
+            "https://my.smoothiefroot.com/api/fruit/watermelon"
+        )
+
+        sf_df = st.dataframe(
+            data=smoothiefroot_response.json(),
+            use_container_width=True
+        )
+
+# Insert both ingredients and name
+my_insert_stmt = """
+    INSERT INTO smoothies.public.orders
+    (ingredients, name_on_order)
+    VALUES ('""" + ingredients_string + """', '""" + name_on_order + """')
+"""
 
 # Submit order
 time_to_insert = st.button("Submit Order")
@@ -50,14 +59,3 @@ if time_to_insert:
         f"Your Smoothie is ordered, {name_on_order}!",
         icon="✅"
     )
-
-# Call the SmoothieFroot API
-smoothiefroot_response = requests.get(
-    "https://my.smoothiefroot.com/api/fruit/watermelon"
-)
-
-# Convert JSON response into a dataframe
-sf_df = st.dataframe(
-    data=smoothiefroot_response.json(),
-    use_container_width=True
-)
