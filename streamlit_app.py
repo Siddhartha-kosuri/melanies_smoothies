@@ -1,6 +1,7 @@
 # Import python packages
 import streamlit as st
 import requests
+import pandas as pd
 from snowflake.snowpark.functions import col
 
 # Write directly to the app
@@ -19,7 +20,13 @@ session = cnx.session()
 # Get fruit options
 my_dataframe = session.table(
     "smoothies.public.fruit_options"
-).select(col("FRUIT_NAME"))
+).select(
+    col("FRUIT_NAME"),
+    col("SEARCH_ON")
+)
+
+# Convert Snowpark DataFrame to Pandas DataFrame
+pd_df = my_dataframe.to_pandas()
 
 # Choose ingredients
 ingredients_list = st.multiselect(
@@ -34,6 +41,21 @@ if ingredients_list:
     for fruit_chosen in ingredients_list:
         ingredients_string += fruit_chosen + ' '
 
+        # Get the API search value
+        search_on = pd_df.loc[
+            pd_df['FRUIT_NAME'] == fruit_chosen,
+            'SEARCH_ON'
+        ].iloc[0]
+
+        st.write(
+            'The search value for ',
+            fruit_chosen,
+            ' is ',
+            search_on,
+            '.'
+        )
+
+        # Call the SmoothieFroot API
         smoothiefroot_response = requests.get(
             "https://my.smoothiefroot.com/api/fruit/watermelon"
         )
